@@ -283,17 +283,23 @@ function App() {
       
       setLoading(true);
       try {
+        console.log('Attempting login with email:', email);
         const response = await axios.get(`${API}/users`);
-        console.log('Users response:', response.data);
-        const user = response.data.find(u => u.email.toLowerCase() === email.toLowerCase());
+        console.log('All users found:', response.data.length);
+        console.log('Users:', response.data.map(u => ({ email: u.email, name: u.name })));
+        
+        const user = response.data.find(u => u.email.toLowerCase().trim() === email.toLowerCase().trim());
+        console.log('Matching user found:', user);
+        
         if (user) {
-          console.log('User found:', user);
+          console.log('Setting current user and redirecting to dashboard');
           setCurrentUser(user);
           localStorage.setItem('currentUser', JSON.stringify(user));
           setCurrentView('dashboard');
           alert('Login successful!');
         } else {
-          alert('User not found. Please check your email or create an account.');
+          console.log('No matching user found for email:', email);
+          alert(`User not found with email: ${email}. Please check your email or create an account.`);
         }
       } catch (error) {
         console.error('Login error:', error);
