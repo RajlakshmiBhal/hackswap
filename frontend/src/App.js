@@ -316,6 +316,7 @@ function App() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter your email address"
               />
             </div>
             <button
@@ -326,6 +327,33 @@ function App() {
               {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
+          
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <p className="text-sm text-gray-600 mb-3 text-center">Demo Accounts (Click to Login)</p>
+            <div className="space-y-2">
+              <button
+                onClick={() => setEmail('sarah@demo.com')}
+                className="w-full text-left p-2 border rounded hover:bg-gray-50 text-sm"
+              >
+                <div className="font-medium">Sarah Wilson</div>
+                <div className="text-gray-600">Web Designer • New York, NY</div>
+              </button>
+              <button
+                onClick={() => setEmail('mike@demo.com')}
+                className="w-full text-left p-2 border rounded hover:bg-gray-50 text-sm"
+              >
+                <div className="font-medium">Mike Chen</div>
+                <div className="text-gray-600">Full Stack Developer • San Francisco, CA</div>
+              </button>
+              <button
+                onClick={() => setEmail('emma@demo.com')}
+                className="w-full text-left p-2 border rounded hover:bg-gray-50 text-sm"
+              >
+                <div className="font-medium">Emma Davis</div>
+                <div className="text-gray-600">Photographer • Austin, TX</div>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
