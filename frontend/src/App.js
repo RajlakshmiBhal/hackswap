@@ -20,7 +20,79 @@ function App() {
       setCurrentUser(JSON.parse(savedUser));
       setCurrentView('dashboard');
     }
+    createDemoUsers(); // Create demo users if they don't exist
   }, []);
+
+  // Create demo users for testing
+  const createDemoUsers = async () => {
+    try {
+      const response = await axios.get(`${API}/users`);
+      // If there are already users, don't create demo ones
+      if (response.data.length > 0) return;
+
+      // Create demo users
+      const demoUsers = [
+        {
+          name: "Sarah Wilson",
+          email: "sarah@demo.com",
+          location: "New York, NY",
+          profile_photo: "https://images.unsplash.com/photo-1494790108755-2616b2e11e25?w=150"
+        },
+        {
+          name: "Mike Chen",
+          email: "mike@demo.com", 
+          location: "San Francisco, CA",
+          profile_photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+        },
+        {
+          name: "Emma Davis",
+          email: "emma@demo.com",
+          location: "Austin, TX",
+          profile_photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150"
+        }
+      ];
+
+      for (const user of demoUsers) {
+        try {
+          await axios.post(`${API}/users`, user);
+        } catch (error) {
+          // User might already exist, continue
+        }
+      }
+
+      // Add skills to demo users
+      const allUsers = await axios.get(`${API}/users`);
+      const users = allUsers.data;
+
+      if (users.length >= 3) {
+        // Update Sarah with skills
+        await axios.put(`${API}/users/${users[0].id}`, {
+          skills_offered: ["Web Design", "Photoshop", "UI/UX Design"],
+          skills_wanted: ["React", "JavaScript", "Node.js"],
+          availability: "Evenings and weekends",
+          is_public: true
+        });
+
+        // Update Mike with skills
+        await axios.put(`${API}/users/${users[1].id}`, {
+          skills_offered: ["React", "JavaScript", "Python", "Node.js"],
+          skills_wanted: ["Machine Learning", "Data Science", "UI Design"],
+          availability: "Weekdays after 6 PM",
+          is_public: true
+        });
+
+        // Update Emma with skills
+        await axios.put(`${API}/users/${users[2].id}`, {
+          skills_offered: ["Photography", "Video Editing", "Adobe Premiere"],
+          skills_wanted: ["Web Development", "Marketing", "SEO"],
+          availability: "Weekends",
+          is_public: true
+        });
+      }
+    } catch (error) {
+      console.log('Demo users creation skipped:', error.message);
+    }
+  };
 
   // Components
   const Header = () => (
