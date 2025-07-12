@@ -200,21 +200,34 @@ function App() {
 
   const Login = () => {
     const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
       e.preventDefault();
+      if (!email.trim()) {
+        alert('Please enter your email');
+        return;
+      }
+      
+      setLoading(true);
       try {
         const response = await axios.get(`${API}/users`);
-        const user = response.data.find(u => u.email === email);
+        console.log('Users response:', response.data);
+        const user = response.data.find(u => u.email.toLowerCase() === email.toLowerCase());
         if (user) {
+          console.log('User found:', user);
           setCurrentUser(user);
           localStorage.setItem('currentUser', JSON.stringify(user));
           setCurrentView('dashboard');
+          alert('Login successful!');
         } else {
-          alert('User not found');
+          alert('User not found. Please check your email or create an account.');
         }
       } catch (error) {
-        alert('Login failed');
+        console.error('Login error:', error);
+        alert('Login failed: ' + (error.response?.data?.detail || 'Unable to connect to server'));
+      } finally {
+        setLoading(false);
       }
     };
 
