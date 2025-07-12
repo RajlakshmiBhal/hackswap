@@ -26,11 +26,7 @@ function App() {
   // Create demo users for testing
   const createDemoUsers = async () => {
     try {
-      const response = await axios.get(`${API}/users`);
-      // If there are already users, don't create demo ones
-      if (response.data.length > 0) return;
-
-      // Create demo users
+      // Always try to create demo users (backend will handle duplicates)
       const demoUsers = [
         {
           name: "Sarah Wilson",
@@ -52,45 +48,63 @@ function App() {
         }
       ];
 
-      for (const user of demoUsers) {
+      console.log('Creating demo users...');
+      const createdUsers = [];
+      
+      for (const userData of demoUsers) {
         try {
-          await axios.post(`${API}/users`, user);
+          const response = await axios.post(`${API}/users`, userData);
+          createdUsers.push(response.data);
+          console.log(`Created user: ${userData.name}`);
         } catch (error) {
-          // User might already exist, continue
+          if (error.response?.status === 400 && error.response?.data?.detail?.includes('already registered')) {
+            console.log(`User ${userData.email} already exists`);
+            // Get existing user
+            const allUsers = await axios.get(`${API}/users`);
+            const existingUser = allUsers.data.find(u => u.email === userData.email);
+            if (existingUser) createdUsers.push(existingUser);
+          } else {
+            console.error(`Error creating user ${userData.name}:`, error.message);
+          }
         }
       }
 
       // Add skills to demo users
-      const allUsers = await axios.get(`${API}/users`);
-      const users = allUsers.data;
+      if (createdUsers.length > 0) {
+        const skillUpdates = [
+          {
+            skills_offered: ["Web Design", "Photoshop", "UI/UX Design"],
+            skills_wanted: ["React", "JavaScript", "Node.js"],
+            availability: "Evenings and weekends",
+            is_public: true
+          },
+          {
+            skills_offered: ["React", "JavaScript", "Python", "Node.js"],
+            skills_wanted: ["Machine Learning", "Data Science", "UI Design"],
+            availability: "Weekdays after 6 PM",
+            is_public: true
+          },
+          {
+            skills_offered: ["Photography", "Video Editing", "Adobe Premiere"],
+            skills_wanted: ["Web Development", "Marketing", "SEO"],
+            availability: "Weekends",
+            is_public: true
+          }
+        ];
 
-      if (users.length >= 3) {
-        // Update Sarah with skills
-        await axios.put(`${API}/users/${users[0].id}`, {
-          skills_offered: ["Web Design", "Photoshop", "UI/UX Design"],
-          skills_wanted: ["React", "JavaScript", "Node.js"],
-          availability: "Evenings and weekends",
-          is_public: true
-        });
-
-        // Update Mike with skills
-        await axios.put(`${API}/users/${users[1].id}`, {
-          skills_offered: ["React", "JavaScript", "Python", "Node.js"],
-          skills_wanted: ["Machine Learning", "Data Science", "UI Design"],
-          availability: "Weekdays after 6 PM",
-          is_public: true
-        });
-
-        // Update Emma with skills
-        await axios.put(`${API}/users/${users[2].id}`, {
-          skills_offered: ["Photography", "Video Editing", "Adobe Premiere"],
-          skills_wanted: ["Web Development", "Marketing", "SEO"],
-          availability: "Weekends",
-          is_public: true
-        });
+        for (let i = 0; i < Math.min(createdUsers.length, skillUpdates.length); i++) {
+          try {
+            await axios.put(`${API}/users/${createdUsers[i].id}`, skillUpdates[i]);
+            console.log(`Updated skills for ${createdUsers[i].name}`);
+          } catch (error) {
+            console.error(`Error updating skills for ${createdUsers[i].name}:`, error.message);
+          }
+        }
       }
+      
+      console.log('Demo users setup complete');
     } catch (error) {
-      console.log('Demo users creation skipped:', error.message);
+      console.error('Demo users setup failed:', error.message);
     }
   };
 
